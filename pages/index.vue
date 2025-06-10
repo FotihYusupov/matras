@@ -39,7 +39,7 @@
         </div>
         <div class="space-y-1 mb-4">
           <p class="text-lg">
-            <span class="font-semibold">Narxi:</span> ${{ order.price.toFixed(2) }}
+            <span class="font-semibold">Narxi:</span> ${{ order.price }}
           </p>
           <p class="text-lg">
             <span class="font-semibold">Manzil:</span> {{ order.address }}
@@ -152,40 +152,48 @@
 
 <script setup>
 import { navigateTo } from '#app';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
-const orders = ref([
-  {
-    id: 1,
-    customer: 'Ali Valiyev',
-    products: ['Mahsulot A', 'Mahsulot B'],
-    price: 120.0,
-    address: 'Toshkent sh., Chilonzor tumani, 5-mavze, 12-uy',
-    map: 'https://www.google.com/maps?q=41.2995,69.2401&hl=uz&z=15&output=embed',
-    mapLink: "https://yandex.uz/maps/-/CHSzbRO1"
-  },
-  {
-    id: 2,
-    customer: 'Dilshod Karimov',
-    products: ['Mahsulot C'],
-    price: 55.5,
-    address: 'Samarqand sh., Registon ko\'chasi, 21-uy',
-    map: 'https://www.google.com/maps?q=39.6542,66.9597&hl=uz&z=15&output=embed',
-    mapLink: "https://yandex.uz/maps/-/CHSzbRO1"
-  },
-  {
-    id: 3,
-    customer: 'Gulnora Xolmatova',
-    products: ['Mahsulot D', 'Mahsulot E', 'Mahsulot F'],
-    price: 200.75,
-    address: 'Buxoro sh., G\'ijduvon tumani, 7-uy',
-    map: 'https://www.google.com/maps?q=40.0997,64.6833&hl=uz&z=15&output=embed',
-    mapLink: "https://yandex.uz/maps/-/CHSzbRO1"
-  },
-]);
+// Initialize orders as a reactive reference
+const orders = ref([]);
 
+// State for modal
 const showModal = ref(false);
 const selectedOrder = ref({});
+
+// Fetch orders from the API
+async function fetchOrders() {
+  try {
+    const response = await fetch('https://matras.kingsman.boutique/orders');
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const data = await response.json();
+    
+    // Map API data to the template's expected order structure
+    orders.value = data.map(order => ({
+      id: order._id,
+      customer: `${order.firstName} ${order.lastName}`,
+      products: [`${order.productType} (Eni: ${order.eniga}sm, Boyi: ${order.boyiga}sm, ${order.quantity} dona)`],
+      price: calculatePrice(order),
+      address: order.address || 'Toshkent sh., Chilonzor tumani, 5-mavze, 12-uy',
+      map: order.map || 'https://www.google.com/maps?q=41.2995,69.2401&hl=uz&z=15&output=embed',
+      mapLink: order.mapLink || 'https://yandex.uz/maps/-/CHSzbRO1',
+    }));
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+  }
+}
+
+// Example price calculation
+function calculatePrice(order) {
+  return (order.quantity * 50).toFixed(2); // Example: $50 per unit
+}
+
+// Fetch orders when component is mounted
+onMounted(() => {
+  fetchOrders();
+});
 
 // Compute filtered orders excluding active ones
 const filteredOrders = computed(() => {
