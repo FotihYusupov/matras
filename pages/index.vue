@@ -198,7 +198,7 @@ onMounted(() => {
 // Compute filtered orders excluding active ones
 const filteredOrders = computed(() => {
   const activeOrders = JSON.parse(localStorage.getItem('actives')) || [];
-  return orders.value.filter(order => !activeOrders.includes(order.id));
+  return orders.value.filter(order => !activeOrders.includes(order.id)).reverse();
 });
 
 function openModal(order) {

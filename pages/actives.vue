@@ -120,7 +120,7 @@ function calculatePrice(order) {
 // Compute active orders based on localStorage
 const activeOrders = computed(() => {
   const activeOrderIds = JSON.parse(localStorage.getItem('actives')) || [];
-  return orders.value.filter(order => activeOrderIds.includes(order.id));
+  return orders.value.filter(order => activeOrderIds.includes(order.id)).reverse();
 });
 
 // Remove order from actives when finished
